@@ -2,21 +2,100 @@ name: Remote Run
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # allows manual trigger
+
 jobs:
   execute:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # allows committing logs back
+
     steps:
+      # 1. Checkout the repository
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Run
+        with:
+          fetch-depth: 0
+
+      # 2. Setup runtimes
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Ensure C++ Compiler
+        run: g++ --version
+
+      # 3. Prepare directories
+      - name: Prepare Workspace
         run: |
           mkdir -p logs
-          ID=$(ls input/run_*.json | xargs -n1 basename | cut -d'_' -f2 | cut -d'.' -f1)
-          javac src/Main.java
-          java -cp src Main < input/input_$ID.txt > logs/output_$ID.txt 2>&1 || echo "--- EXECUTION FAILED ---" >> logs/output_$ID.txt
-          echo "--- FINISHED ---" >> logs/output_$ID.txt
-      - name: Upload
+          mkdir -p input
+          mkdir -p src
+
+      # 4. Execute student code
+      - name: Run Student Code
+        run: |
+          ID=$GITHUB_RUN_ID
+
+          # Read language
+          LANG_FILE="lang.txt"
+          if [ ! -f "$LANG_FILE" ]; then
+            echo "::error::lang.txt not found. Cannot run code."
+            exit 1
+          fi
+          LANG=$(cat "$LANG_FILE")
+
+          # Compile/prepare code based on language
+          case "$LANG" in
+            python)
+              cp generated_code.py src/
+              CMD="python3 src/generated_code.py"
+              ;;
+            javascript)
+              cp generated_code.js src/
+              CMD="node src/generated_code.js"
+              ;;
+            java)
+              cp Main.java src/
+              javac src/Main.java
+              CMD="java -cp src Main"
+              ;;
+            cpp)
+              cp main.cpp src/
+              g++ src/main.cpp -o src/app
+              CMD="./src/app"
+              ;;
+            *)
+              echo "::error::Unsupported language: $LANG"
+              exit 1
+              ;;
+          esac
+
+          # Run the code, redirect logs
+          if [ -f "input/input_$ID.txt" ]; then
+            $CMD < "input/input_$ID.txt" > "logs/output_$ID.txt" 2>&1
+          else
+            $CMD > "logs/output_$ID.txt" 2>&1
+          fi
+
+          echo "--- FINISHED ---" >> "logs/output_$ID.txt"
+
+      # 5. Commit and push logs back if changed
+      - name: Commit Logs
         run: |
           git config user.name "Runner"
-          git config user.email "r@edu.com"
-          git add logs/ && git commit -m "Logs" && git push origin main:logs --force
+          git config user.email "runner@edu.com"
+          git add logs/
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "Logs for run $GITHUB_RUN_ID" && git push origin main)
