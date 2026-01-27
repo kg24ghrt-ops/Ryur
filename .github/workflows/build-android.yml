@@ -15,22 +15,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set up JDK 21
+      # 2. Set up JDK 21 (latest LTS)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 21
 
-      # 3. Install Gradle if gradlew not present
-      - name: Install Gradle if no wrapper
-        run: |
-          if [ ! -f "./gradlew" ]; then
-            echo "No gradlew found. Installing system Gradle..."
-            sudo apt-get update
-            sudo apt-get install -y gradle
-          fi
-          gradle --version
+      # 3. Install latest Gradle
+      - name: Install Latest Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.6.1   # AGP 8.6.1 compatible
+          wrapper-enabled: false
 
       # 4. Cache Gradle dependencies
       - name: Cache Gradle
@@ -38,7 +35,8 @@ jobs:
         with:
           path: |
             ~/.gradle/caches
-          key: gradle-${{ hashFiles('**/*.gradle*') }}
+            ~/.gradle/wrapper/
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
       # 5. Verify library JAR exists
@@ -49,25 +47,15 @@ jobs:
             exit 1
           fi
 
-      # 6. Build Debug APK
+      # 6. Build APK using system Gradle
       - name: Build Debug APK
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --warning-mode all
-          else
-            gradle assembleDebug --warning-mode all
-          fi
+        run: gradle assembleDebug --warning-mode all
 
       # 7. Run unit tests (optional)
       - name: Run Unit Tests
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew testDebugUnitTest --warning-mode all
-          else
-            gradle testDebugUnitTest --warning-mode all
-          fi
+        run: gradle testDebugUnitTest --warning-mode all
 
-      # 8. Package project + library + APK into ZIP
+      # 8. Package project + APK
       - name: Package Project
         run: |
           mkdir -p build/output
