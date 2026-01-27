@@ -5,6 +5,8 @@ plugins {
 android {
     compileSdk 34
 
+    namespace "com.orchestrator.app" // <--- ADD THIS
+
     defaultConfig {
         applicationId "com.orchestrator.app"
         minSdk 24
