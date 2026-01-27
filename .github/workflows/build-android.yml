@@ -26,7 +26,7 @@ jobs:
       - name: Install Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.3
+          gradle-version: 8.5   # upgraded from 8.3
           wrapper-enabled: false
 
       # 4. Cache Gradle dependencies
