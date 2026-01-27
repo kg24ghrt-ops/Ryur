@@ -22,13 +22,19 @@ jobs:
           distribution: temurin
           java-version: 'latest'
 
-      # 3. Install latest system Gradle (if no wrapper)
-      - name: Install Gradle
-        if: "! (test -f gradlew)"
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 'latest'
-          wrapper-enabled: false
+      # 3. Install latest Gradle (system Gradle)
+      - name: Install Latest Gradle
+        run: |
+          if [ ! -f gradlew ]; then
+            echo "No gradle wrapper found, installing latest Gradle..."
+            sudo apt-get update
+            sudo apt-get install -y wget unzip
+            LATEST_GRADLE=$(wget -qO- https://services.gradle.org/versions/current | grep -Po '"version":.*?[^\\]",' | head -1 | cut -d'"' -f4)
+            wget https://services.gradle.org/distributions/gradle-${LATEST_GRADLE}-bin.zip
+            unzip -qq gradle-${LATEST_GRADLE}-bin.zip
+            sudo mv gradle-${LATEST_GRADLE} /opt/gradle
+            export PATH=/opt/gradle/bin:$PATH
+          fi
 
       # 4. Cache Gradle dependencies
       - name: Cache Gradle
@@ -39,7 +45,22 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: gradle-
 
-      # 5. Verify library JAR exists
+      # 5. Auto-update build.gradle (latest SDK & dependencies)
+      - name: Update build.gradle
+        run: |
+          echo "Updating build.gradle to latest stable Android SDK and dependencies..."
+          BUILD_FILE="app/build.gradle"
+          if [ -f "$BUILD_FILE" ]; then
+            sed -i 's/compileSdk .*/compileSdk 34/' $BUILD_FILE
+            sed -i 's/minSdk .*/minSdk 24/' $BUILD_FILE
+            sed -i 's/targetSdk .*/targetSdk 34/' $BUILD_FILE
+            sed -i "s/androidx.appcompat:appcompat:.*/androidx.appcompat:appcompat:1.8.0/" $BUILD_FILE
+            sed -i "s/com.google.android.material:material:.*/com.google.android.material:material:1.11.0/" $BUILD_FILE
+            sed -i "s/androidx.core:core-ktx:.*/androidx.core:core-ktx:1.12.0/" $BUILD_FILE
+            sed -i "s/androidx.browser:browser:.*/androidx.browser:browser:1.7.0/" $BUILD_FILE
+          fi
+
+      # 6. Verify library JAR exists
       - name: Verify Library JAR
         run: |
           if [ ! -f "./orchestrator-core/libs/orchestrator-core-1.0.0.jar" ]; then
@@ -47,7 +68,7 @@ jobs:
             exit 1
           fi
 
-      # 6. Build Debug APK
+      # 7. Build Debug APK
       - name: Build Debug APK
         run: |
           if [ -f gradlew ]; then
@@ -56,7 +77,7 @@ jobs:
             gradle assembleDebug --warning-mode all
           fi
 
-      # 7. Run unit tests (optional)
+      # 8. Run unit tests (optional)
       - name: Run Unit Tests
         run: |
           if [ -f gradlew ]; then
@@ -65,7 +86,7 @@ jobs:
             gradle testDebugUnitTest --warning-mode all
           fi
 
-      # 8. Package project + library + APK into ZIP
+      # 9. Package project + library + APK into ZIP
       - name: Package Project
         run: |
           mkdir -p build/output
@@ -74,7 +95,7 @@ jobs:
           zip -r "$ZIP_NAME" "$(basename $GITHUB_WORKSPACE)" -x "**/build/**"
           mv "$ZIP_NAME" "$GITHUB_WORKSPACE/build/output/"
 
-      # 9. Upload APK + ZIP
+      # 10. Upload APK + ZIP
       - name: Upload APK + ZIP
         uses: actions/upload-artifact@v4
         with:
