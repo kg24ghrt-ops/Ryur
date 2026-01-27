@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Orchestrator AI</string>
+    <string name="title_main">Orchestrator AI Workspace</string>
+
+    <string name="btn_new_project">New Project</string>
+    <string name="btn_open_ai">Open AI Workspace</string>
+    <string name="btn_package_project">Package Project</string>
+
+    <string name="logs_placeholder">Logs will appear here...</string>
+</resources>

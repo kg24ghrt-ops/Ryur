@@ -1,0 +1,3 @@
+rootProject.name = "MyOrchestratorApp"
+include ':app'
+include ':orchestrator-core'
