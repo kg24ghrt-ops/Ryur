@@ -19,15 +19,9 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-}
-
-repositories {
-    google()
-    mavenCentral()
-    flatDir { dirs '../orchestrator-core/libs' }
 }
 
 dependencies {
@@ -35,4 +29,4 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.browser:browser:1.7.0'
-}.
+}
