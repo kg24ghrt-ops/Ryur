@@ -22,12 +22,14 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # 3. Install latest system Gradle if gradlew missing
-      - name: Install Gradle
-        if: ${{ ! (exists('gradlew')) }}
+      # 3. Install Gradle if gradlew not present
+      - name: Install Gradle if no wrapper
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
+          if [ ! -f "./gradlew" ]; then
+            echo "No gradlew found. Installing system Gradle..."
+            sudo apt-get update
+            sudo apt-get install -y gradle
+          fi
           gradle --version
 
       # 4. Cache Gradle dependencies
@@ -47,7 +49,7 @@ jobs:
             exit 1
           fi
 
-      # 6. Build Debug APK using system Gradle
+      # 6. Build Debug APK
       - name: Build Debug APK
         run: |
           if [ -f "./gradlew" ]; then
