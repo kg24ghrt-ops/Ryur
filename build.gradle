@@ -1,17 +1,46 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.1' // matches Gradle 8.5
-    }
+plugins {
+    id 'com.android.application'
+    // Add Kotlin plugin if you need kotlinOptions
+    id 'org.jetbrains.kotlin.android' version '1.9.10' apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        flatDir { dirs 'orchestrator-core/libs' }
+android {
+    namespace "com.orchestrator.app"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.orchestrator.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
     }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    // Only use kotlinOptions if Kotlin plugin applied
+    // kotlinOptions {
+    //     jvmTarget = "21"
+    // }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    flatDir { dirs '../orchestrator-core/libs' } // keep your JAR folder
+}
+
+dependencies {
+    implementation fileTree(dir: '../orchestrator-core/libs', include: ['*.jar'])
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.browser:browser:1.7.0'
 }
