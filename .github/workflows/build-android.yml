@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # 1. Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,11 +20,15 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 'latest'
 
-      # 3. Verify system Gradle version
-      - name: Check system Gradle
-        run: gradle --version
+      # 3. Install latest system Gradle (if no wrapper)
+      - name: Install Gradle
+        if: "! (test -f gradlew)"
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 'latest'
+          wrapper-enabled: false
 
       # 4. Cache Gradle dependencies
       - name: Cache Gradle
@@ -43,11 +47,25 @@ jobs:
             exit 1
           fi
 
-      # 6. Build Debug APK using system Gradle
+      # 6. Build Debug APK
       - name: Build Debug APK
-        run: gradle assembleDebug --warning-mode all
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleDebug --warning-mode all
+          else
+            gradle assembleDebug --warning-mode all
+          fi
 
-      # 7. Package project + library + APK into ZIP
+      # 7. Run unit tests (optional)
+      - name: Run Unit Tests
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew testDebugUnitTest --warning-mode all
+          else
+            gradle testDebugUnitTest --warning-mode all
+          fi
+
+      # 8. Package project + library + APK into ZIP
       - name: Package Project
         run: |
           mkdir -p build/output
@@ -56,7 +74,7 @@ jobs:
           zip -r "$ZIP_NAME" "$(basename $GITHUB_WORKSPACE)" -x "**/build/**"
           mv "$ZIP_NAME" "$GITHUB_WORKSPACE/build/output/"
 
-      # 8. Upload APK + ZIP
+      # 9. Upload APK + ZIP
       - name: Upload APK + ZIP
         uses: actions/upload-artifact@v4
         with:

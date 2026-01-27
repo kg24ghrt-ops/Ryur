@@ -5,12 +5,12 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.6.1'
-        // Add Kotlin plugin if needed:
+        // Only if using Kotlin:
         // classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10"
     }
 }
 
 plugins {
     id 'com.android.application'
-    // id 'org.jetbrains.kotlin.android' // only if using Kotlin
+    // id 'org.jetbrains.kotlin.android' // only if needed
 }
