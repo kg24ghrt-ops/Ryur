@@ -1,12 +1,11 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        google()      // REQUIRED: This is where the Android tools live
-        mavenCentral() // REQUIRED: For other standard libraries
+        google()      // REQUIRED
+        mavenCentral() // REQUIRED
     }
     dependencies {
-        // Updated to the version mentioned in your error log
-        classpath 'com.android.tools.build:gradle:8.5.2'
+        // This must be compatible with your Gradle Wrapper version
+        classpath 'com.android.tools.build:gradle:8.2.0' 
     }
 }
 
