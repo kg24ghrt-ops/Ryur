@@ -1,4 +1,4 @@
-name: Build Android APK (Latest Gradle, Wrapper-less)
+name: Build Android APK (Gradle 8.7, Wrapper-less)
 
 on:
   push:
@@ -26,20 +26,15 @@ jobs:
       - name: Install tools
         run: |
           sudo apt update
-          sudo apt install -y unzip curl jq
+          sudo apt install -y unzip curl
 
-      # 4. Fetch latest stable Gradle, download, and install
-      - name: Install latest Gradle
+      # 4. Install Gradle 8.7
+      - name: Install Gradle 8.7
         run: |
-          echo "Fetching latest stable Gradle version..."
-          LATEST_GRADLE=$(curl -s https://services.gradle.org/versions/current | jq -r '.version')
-          echo "Latest Gradle version: $LATEST_GRADLE"
-
-          GRADLE_ZIP="gradle-${LATEST_GRADLE}-bin.zip"
-          wget -q https://services.gradle.org/distributions/${GRADLE_ZIP}
-          unzip -q $GRADLE_ZIP
-          chmod +x gradle-${LATEST_GRADLE}/bin/gradle
-          echo "$PWD/gradle-${LATEST_GRADLE}/bin" >> $GITHUB_PATH
+          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q gradle-8.7-bin.zip
+          chmod +x gradle-8.7/bin/gradle
+          echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
 
       # 5. Optional: Grant execute permissions if wrapper exists
       - name: Grant execute permission (safe no-op)
@@ -49,7 +44,7 @@ jobs:
       # 6. Build APK with full logging
       - name: Build Debug APK
         run: |
-          gradle assembleDebug --no-daemon --stacktrace --info
+          gradle assembleDebug --no-daemon --stacktrace --info --warning-mode all
 
       # 7. Upload APK artifact
       - name: Upload APK
