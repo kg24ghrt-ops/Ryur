@@ -69,12 +69,17 @@ jobs:
         run: |
           if [ -f gradlew ]; then chmod +x gradlew; fi
 
-      # 8. Build APK
+      # 8. Disable incremental data binding in CI
+      - name: Disable incremental data binding
+        run: |
+          echo "android.databinding.incremental=false" >> gradle.properties
+
+      # 9. Build APK with clean to avoid stuck tasks
       - name: Build Debug APK
         run: |
-          gradle assembleDebug --no-daemon --stacktrace --info --warning-mode all
+          gradle clean assembleDebug --no-daemon --stacktrace --info --warning-mode all
 
-      # 9. Upload APK artifact
+      # 10. Upload APK artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
