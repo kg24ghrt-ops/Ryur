@@ -28,15 +28,16 @@ jobs:
           sudo apt update
           sudo apt install -y unzip curl jq
 
-      # 4. Fetch latest Gradle, download, and install
+      # 4. Fetch latest stable Gradle, download, and install
       - name: Install latest Gradle
         run: |
-          echo "Fetching latest Gradle version..."
+          echo "Fetching latest stable Gradle version..."
           LATEST_GRADLE=$(curl -s https://services.gradle.org/versions/current | jq -r '.version')
           echo "Latest Gradle version: $LATEST_GRADLE"
 
-          wget https://services.gradle.org/distributions/gradle-${LATEST_GRADLE}-bin.zip
-          unzip -q gradle-${LATEST_GRADLE}-bin.zip
+          GRADLE_ZIP="gradle-${LATEST_GRADLE}-bin.zip"
+          wget -q https://services.gradle.org/distributions/${GRADLE_ZIP}
+          unzip -q $GRADLE_ZIP
           chmod +x gradle-${LATEST_GRADLE}/bin/gradle
           echo "$PWD/gradle-${LATEST_GRADLE}/bin" >> $GITHUB_PATH
 
