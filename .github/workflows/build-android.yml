@@ -24,11 +24,11 @@ jobs:
           git commit -m "Daily automated commit: $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
           git push origin main || echo "Push failed (probably no changes)"
 
-      - name: Set up JDK 25
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: '17'
 
       - name: Install required tools
         run: |
@@ -63,7 +63,8 @@ jobs:
       - name: Disable incremental data binding
         run: |
           echo "android.databinding.incremental=false" >> gradle.properties
-      - name: Build AP
+
+      - name: Build APK
         run: gradle clean assembleDebug --no-daemon --stacktrace --info --warning-mode all
 
       - name: Upload APK artifact
