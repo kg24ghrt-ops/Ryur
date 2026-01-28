@@ -3,19 +3,16 @@ plugins {
 }
 
 android {
-    namespace "com.orchestrator.app"
+    // FIX: Mandatory for modern Gradle
+    namespace 'com.kg24ghrt.ryur' 
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.orchestrator.app"
+        applicationId "com.kg24ghrt.ryur"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
-    }
-
-    buildFeatures {
-        viewBinding true
     }
 
     compileOptions {
@@ -25,13 +22,9 @@ android {
 }
 
 dependencies {
-    // Your special library
-    implementation fileTree(dir: '../orchestrator-core/libs', include: ['*.jar'])
-
-    // AndroidX & Material dependencies
-    implementation 'androidx.core:core:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    // FIX: Look in the project's 'libs' folder, not your phone's storage
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.browser:browser:1.8.0'
 }
